@@ -1,0 +1,121 @@
+[gd_scene load_steps=10 format=3 uid="uid://bdh10gpraafx8"]
+
+[ext_resource type="Script" path="res://Scripts/power_ups.gd" id="1_bj0p2"]
+[ext_resource type="Texture2D" uid="uid://m7aimtmww8qr" path="res://Sprites/PowerUps - Only.png" id="1_hqd2c"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_g3aih"]
+size = Vector2(14, 14)
+
+[sub_resource type="Animation" id="Animation_xb265"]
+resource_name = "Bomb"
+length = 0.1
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [1]
+}
+
+[sub_resource type="Animation" id="Animation_6taxg"]
+resource_name = "Flame"
+length = 0.1
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [2]
+}
+
+[sub_resource type="Animation" id="Animation_et7nr"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [2]
+}
+
+[sub_resource type="Animation" id="Animation_npuen"]
+resource_name = "Skull"
+length = 0.1
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [3]
+}
+
+[sub_resource type="Animation" id="Animation_mipvq"]
+resource_name = "Speed"
+length = 0.1
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [0]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_31ph3"]
+_data = {
+"Bomb": SubResource("Animation_xb265"),
+"Flame": SubResource("Animation_6taxg"),
+"RESET": SubResource("Animation_et7nr"),
+"Skull": SubResource("Animation_npuen"),
+"Speed": SubResource("Animation_mipvq")
+}
+
+[node name="PowerUps" type="Area2D"]
+collision_layer = 8
+collision_mask = 3
+script = ExtResource("1_bj0p2")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_g3aih")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+position = Vector2(-5.96046e-08, 5.96046e-08)
+scale = Vector2(0.875, 0.875)
+texture = ExtResource("1_hqd2c")
+hframes = 4
+frame = 2
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_31ph3")
+}
+
+[connection signal="area_entered" from="." to="." method="_on_area_entered"]
