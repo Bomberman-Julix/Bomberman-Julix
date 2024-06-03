@@ -12,6 +12,7 @@ var is_host = false
 var rng = RandomNumberGenerator.new()
 
 func _ready():
+	# Conecta os sinais de conexão
 	multiplayer.peer_connected.connect(player_connected)
 	multiplayer.peer_disconnected.connect(player_disconnected)
 	multiplayer.connected_to_server.connect(connected_to_server)
@@ -40,7 +41,7 @@ func connected_to_server ():
 func connection_failed ():
 	print("Connection Failed")
 
-
+# Manda as informções do player
 @rpc("any_peer")
 func send_player_info(name, id):
 	if not GameManager.Players.has(id):
@@ -55,34 +56,41 @@ func send_player_info(name, id):
 		for i in GameManager.Players:
 			send_player_info.rpc(GameManager.Players[i].name, i)
 
-
+# Cria o host ao clicar no botão
 func _on_host_pressed():
+	# Carrega a chave e certificado da criptografia
 	var serverCert = load("res://serverCAS.crt")
 	var serverKey = load("res://serverKey.key")
 	
-	
+	# Cria o host peer
 	peer = ENetMultiplayerPeer.new()
 	var error = peer.create_server(port, 6)
 	if error != OK:
 		print("Cannot host: ", error)
 		return
 	
+	# Aplica a criptografia
 	peer.get_host().dtls_server_setup(TLSOptions.server(serverKey, serverCert))
+	#Comprime a "conexão" (sei lá)
 	peer.get_host().compress(ENetConnection.COMPRESS_RANGE_CODER)
 	
 	multiplayer.set_multiplayer_peer(peer)
 	print("Waiting for Players!")
+	# Pega o nome colocado no LineEdit se não pega um padrão
 	var p_name = $Start/LineName.text
 	if p_name == "":
 		p_name = str("Player ", multiplayer.get_unique_id())
 	send_player_info(p_name, multiplayer.get_unique_id())
 	
+	# Esconde a UI e mostra os botões de começo
 	$Start.hide()
 	$Lobby.show()
 	$Lobby/StartGame.show()
 	timer.start()
 
+#Cria o client ao clicar no botão "join"
 func _on_join_pressed():
+	#Pega o IP do LineEdit
 	if address_line.text != "":
 		address = address_line.text
 	
@@ -98,6 +106,7 @@ func _on_join_pressed():
 	$Start.hide()
 	$Lobby.show()
 
+# Disconecta o Player ao clicar no botão "Cancel"
 func _on_cancel_pressed():
 	
 	GameManager.Players.clear()
@@ -108,9 +117,10 @@ func _on_cancel_pressed():
 	$Start.show()
 	$Lobby/StartGame.hide()
 
-
+# Começa o Game ao clicar no botão "Start"
 func _on_start_pressed():
 	var seed = Time.get_unix_time_from_system()
+	# Chama a função start_game em todos os peers
 	start_game.rpc(seed)
 
 @rpc("any_peer", "call_local")
@@ -140,7 +150,7 @@ func end_the_game(name):
 	
 	var node = get_tree().root.get_child(2)
 	get_tree().root.remove_child(node)
-	DisplayServer.window_set_size(Vector2i(GameManager.screen_width * 2, GameManager.screen_height * 2))
+	get_window().size = Vector2(288 * 2, 240 * 2)
 	self.show()
 
 

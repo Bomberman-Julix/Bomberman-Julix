@@ -26,6 +26,8 @@ sources/0 = SubResource("TileSetAtlasSource_lt7g7")
 [node name="Map_6P" type="Node2D"]
 script = ExtResource("1_duxvg")
 player_scene = ExtResource("2_uo1ns")
+RedClr = Color(1, 0, 0, 1)
+OrigClr = Color(1, 1, 1, 1)
 
 [node name="TileMap" type="TileMap" parent="."]
 tile_set = SubResource("TileSet_f3iff")
@@ -44,19 +46,21 @@ layer_1/tile_data = PackedInt32Array()
 [node name="Board" type="Node2D" parent="."]
 
 [node name="Sprite2D" type="Sprite2D" parent="Board"]
-position = Vector2(392, 112)
-scale = Vector2(1, 1.00591)
+position = Vector2(184, 264)
+rotation = 1.5708
+scale = Vector2(1, 1.64033)
 texture = ExtResource("3_kembo")
 
 [node name="Timer" type="Timer" parent="Board"]
-wait_time = 8.0
+wait_time = 300.0
 one_shot = true
 autostart = true
 
 [node name="TimerLabel" type="Label" parent="Board"]
-offset_left = 376.0
-offset_right = 416.0
-offset_bottom = 32.0
+offset_left = 24.0
+offset_top = 248.0
+offset_right = 64.0
+offset_bottom = 280.0
 text = "100"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -68,10 +72,10 @@ texture = ExtResource("4_4tl07")
 
 [node name="P1" type="Label" parent="Board"]
 visible = false
-offset_left = 376.0
-offset_top = 32.0
-offset_right = 408.0
-offset_bottom = 64.0
+offset_left = 72.0
+offset_top = 248.0
+offset_right = 104.0
+offset_bottom = 280.0
 text = "0"
 horizontal_alignment = 2
 vertical_alignment = 1
@@ -83,10 +87,10 @@ hframes = 6
 
 [node name="P2" type="Label" parent="Board"]
 visible = false
-offset_left = 376.0
-offset_top = 64.0
-offset_right = 408.0
-offset_bottom = 96.0
+offset_left = 120.0
+offset_top = 248.0
+offset_right = 152.0
+offset_bottom = 280.0
 text = "0"
 horizontal_alignment = 2
 vertical_alignment = 1
@@ -99,10 +103,10 @@ frame = 1
 
 [node name="P3" type="Label" parent="Board"]
 visible = false
-offset_left = 376.0
-offset_top = 96.0
-offset_right = 408.0
-offset_bottom = 128.0
+offset_left = 168.0
+offset_top = 248.0
+offset_right = 200.0
+offset_bottom = 280.0
 text = "0"
 horizontal_alignment = 2
 vertical_alignment = 1
@@ -115,10 +119,10 @@ frame = 2
 
 [node name="P4" type="Label" parent="Board"]
 visible = false
-offset_left = 376.0
-offset_top = 128.0
-offset_right = 408.0
-offset_bottom = 160.0
+offset_left = 216.0
+offset_top = 248.0
+offset_right = 248.0
+offset_bottom = 280.0
 text = "0"
 horizontal_alignment = 2
 vertical_alignment = 1
@@ -131,10 +135,10 @@ frame = 3
 
 [node name="P5" type="Label" parent="Board"]
 visible = false
-offset_left = 376.0
-offset_top = 160.0
-offset_right = 408.0
-offset_bottom = 192.0
+offset_left = 264.0
+offset_top = 248.0
+offset_right = 296.0
+offset_bottom = 280.0
 text = "0"
 horizontal_alignment = 2
 vertical_alignment = 1
@@ -147,10 +151,10 @@ frame = 4
 
 [node name="P6" type="Label" parent="Board"]
 visible = false
-offset_left = 376.0
-offset_top = 192.0
-offset_right = 408.0
-offset_bottom = 224.0
+offset_left = 312.0
+offset_top = 248.0
+offset_right = 344.0
+offset_bottom = 280.0
 text = "0"
 horizontal_alignment = 2
 vertical_alignment = 1
@@ -164,3 +168,10 @@ frame = 5
 [node name="GameStart" type="Timer" parent="."]
 wait_time = 0.5
 one_shot = true
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2(184, 144)
+zoom = Vector2(0.785, 0.83)
+
+[connection signal="timeout" from="Board/Timer" to="." method="_on_timer_timeout"]
+[connection signal="timeout" from="GameStart" to="." method="_on_game_start_timeout"]

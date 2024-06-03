@@ -30,14 +30,13 @@ var skins = ["res://Sprites/playersheet1.png",
 "res://Sprites/playersheet5.png",
 "res://Sprites/playersheet6.png"]
 var rng = RandomNumberGenerator.new()
-var dead_count = 0
+var tile_map_size = 15
 
 
 func _ready():
-	DisplayServer.window_set_size(Vector2i(GameManager.screen_width * 2, GameManager.screen_height * 2))
 	
 	rng.seed = map_seed
-	build_map(15, 15)
+	build_map(tile_map_size, tile_map_size)
 	
 	var index = 0
 	for i in GameManager.Players:
@@ -51,7 +50,8 @@ func _ready():
 func restart(seed):
 	
 	rng.seed = seed
-	build_map(15, 15)
+	tile_map_size = 15
+	build_map(tile_map_size, tile_map_size)
 	
 	for i in range(0, power_ups.get_child_count()):
 		power_ups.get_child(i).queue_free()
@@ -127,9 +127,31 @@ func _player_died():
 		increase_score.rpc(id)
 		s_timer.start()
 
+
 @rpc("any_peer")
 func increase_score(id):
 	GameManager.Players[id].score += 1
 
+var beggining = 0
+var tile_id = 1
 func _on_timer_timeout():
-	pass
+	tile_map_size -= 1
+	beggining += 1
+	
+	for x in range(beggining, tile_map_size):
+		tile_map.set_cell(1, Vector2i(beggining, x), 0, Vector2i(tile_id, 0))
+		tile_map.set_cell(1, Vector2i(x, beggining), 0, Vector2i(tile_id, 0))
+		
+		tile_map.set_cell(1, Vector2i(tile_map_size - 1, x), 0, Vector2i(tile_id, 0))
+		tile_map.set_cell(1, Vector2i(x, tile_map_size - 1), 0, Vector2i(tile_id, 0))
+	
+	if tile_id == 1:
+		tile_id = 2
+	else:
+		tile_id = 1
+	
+	if tile_map_size == 10:
+		timer.stop()
+		return
+	else:
+		timer.start(10)

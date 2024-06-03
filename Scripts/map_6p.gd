@@ -9,6 +9,7 @@ extends Node2D
 @onready var timer = $Board/Timer
 @onready var s_timer = $GameStart
 @onready var tile_map = $TileMap
+@onready var camera = $Camera2D
 
 
 @export var player_scene: PackedScene
@@ -36,10 +37,10 @@ var skins = ["res://Sprites/playersheet1.png",
 "res://Sprites/playersheet6.png"]
 var rng = RandomNumberGenerator.new()
 var dead_count = 0
-
+var tile_map_size = Vector2(23, 15)
 
 func _ready():
-	DisplayServer.window_set_size(Vector2i(400 * 2, GameManager.screen_height * 2))
+	get_window().size = Vector2(288 * 3, 240 * 3)
 	
 	rng.seed = map_seed
 	build_map(23, 15)
@@ -55,8 +56,10 @@ func _ready():
 @rpc("any_peer", "call_local")
 func restart(seed):
 	
+	tile_map_size = Vector2(23, 15)
+	
 	rng.seed = seed
-	build_map(23, 15)
+	build_map(tile_map_size.x, tile_map_size.y)
 	
 	for i in range(0, power_ups.get_child_count()):
 		power_ups.get_child(i).queue_free()
@@ -83,7 +86,7 @@ func create_players(i, index):
 	current_player.bomb_manager = bomb_manager
 	current_player.spawn_point = spawn_locations[index]
 	current_player.skin = skins[index]
-	current_player.connect("died", _player_died)
+	current_player.connect("dead", _player_died)
 	scores[index].show()
 	scores[index].text = str(GameManager.Players[i].score)
 	player_manager.add_child(current_player)
@@ -107,7 +110,7 @@ func build_map(width, height):
 				if Vector2i(x, y) == i or tile_map.get_cell_atlas_coords(0, Vector2i(x, y), 0) == Vector2i(1, 0):
 					chance = -1
 			if chance > 30:
-				tile_map.set_cell(1, Vector2i(x, y), 0, Vector2i(0, 0))
+				tile_map.set_cell(1, Vector2i(x, y), 0, Vector2i(3, 0))
 
 
 
@@ -137,5 +140,33 @@ func _player_died():
 func increase_score(id):
 	GameManager.Players[id].score += 1
 
+var beggining = 0
+var tile_id = 1
 func _on_timer_timeout():
-	pass
+	print(beggining)
+	tile_map_size.x -= 1
+	tile_map_size.y -= 1
+	beggining += 1
+	
+	for i in range(beggining, tile_map_size.x):
+		tile_map.set_cell(1, Vector2i(i, beggining), 0, Vector2i(tile_id, 0))
+	
+	for i in range(beggining, tile_map_size.x):
+		tile_map.set_cell(1, Vector2i(i, tile_map_size.y - 1), 0, Vector2i(tile_id, 0))
+	
+	for i in range(beggining, tile_map_size.y):
+		tile_map.set_cell(1, Vector2i(beggining, i), 0, Vector2i(tile_id, 0))
+	
+	for i in range(beggining, tile_map_size.y):
+		tile_map.set_cell(1, Vector2i(tile_map_size.x - 1, i), 0, Vector2i(tile_id, 0))
+	
+	if tile_id == 1:
+		tile_id = 2
+	else:
+		tile_id = 1
+	
+	if beggining == 5:
+		timer.stop()
+		return
+	else:
+		timer.start(10)
