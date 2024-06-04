@@ -1,25 +1,26 @@
 extends Node2D
 
+
 @onready var anim = $AnimationPlayer
-@onready var sprite = $Sprite2D
 @onready var manager = $"../"
 @onready var manager_power_up = $"../../PowerUpManager"
 
-@export var chance = 0
-@export var type = 0
-@export var seed = 0
+
+@export var set_seed = 0
 @export var tile_map = 0
 @export var explosion_len = 1
+
 
 signal exploded
 var rng = RandomNumberGenerator.new()
 
+
 func _ready():
 	anim.play("bomb_cd")
-	rng.seed = seed
+	rng.seed = set_seed
 
 
-func _on_animation_player_animation_finished(anim_name):
+func _on_animation_player_animation_finished(_anim_name):
 	var current_tile: Vector2i = tile_map.local_to_map(global_position)
 	create_explosion(0, current_tile, false)
 	detonate()
@@ -27,11 +28,14 @@ func _on_animation_player_animation_finished(anim_name):
 	queue_free()
 
 
-func create_explosion(anim_type, tile, rotate):
+func create_explosion(anim_type, tile, exp_rotate):
 	var explosion = preload("res://Scenes/explosion.tscn").instantiate()
 	explosion.global_position = tile_map.map_to_local(tile)
-	explosion.rotate = rotate
-	explosion.anim_type = anim_type
+	explosion.explosion_rotate = exp_rotate
+	explosion.anim_type = anim_type 
+	call_deferred("_add_explosion", explosion)
+
+func _add_explosion(explosion):
 	manager.add_child(explosion)
 
 
@@ -77,24 +81,27 @@ func canExplode(tile):
 	
 	if tile_data.get_custom_data("walkable"):
 		if tile_data_layer1 != null and tile_data_layer1.get_custom_data("breakable"):
-			break_block(tile, Time.get_unix_time_from_system())
+			#break_block(tile, Time.get_unix_time_from_system())
+			call_deferred("break_block", tile)
 		else:
 			return true
 	else:
 		return false
 
-func break_block(tile, func_seed):
+func break_block(tile):
 	
 	tile_map.erase_cell(1, tile)
 	
-	var chance = rng.randi_range(0, 99)
-	var type = rng.randi_range(0, 3)
-	if chance > 30:
+	var chance = rng.randf()
+	var type = rng.randf()
+	if chance > 0.7:
 		var power_up = preload("res://Scenes/power_ups.tscn").instantiate()
 		power_up.type = type
 		power_up.global_position = tile_map.map_to_local(tile)
-		manager_power_up.add_child(power_up)
+		call_deferred("_add_power_up", power_up)
 
+func _add_power_up(power_up):
+	manager_power_up.add_child(power_up)
 
 func _on_area_2d_area_entered(area):
 	if area.get_collision_layer() == 2:

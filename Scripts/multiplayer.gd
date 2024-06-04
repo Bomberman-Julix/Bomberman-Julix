@@ -43,18 +43,17 @@ func connection_failed ():
 
 # Manda as informções do player
 @rpc("any_peer")
-func send_player_info(name, id):
+func send_player_info(nome, id):
 	if not GameManager.Players.has(id):
 		GameManager.Players[id] = {
-			"name": name,
+			"nome": nome,
 			"id": id,
 			"score": 0,
-			"active": true
 		}
 	
 	if multiplayer.is_server():
 		for i in GameManager.Players:
-			send_player_info.rpc(GameManager.Players[i].name, i)
+			send_player_info.rpc(GameManager.Players[i].nome, i)
 
 # Cria o host ao clicar no botão
 func _on_host_pressed():
@@ -119,33 +118,33 @@ func _on_cancel_pressed():
 
 # Começa o Game ao clicar no botão "Start"
 func _on_start_pressed():
-	var seed = Time.get_unix_time_from_system()
+	var set_seed = Time.get_unix_time_from_system()
 	# Chama a função start_game em todos os peers
-	start_game.rpc(seed)
+	start_game.rpc(set_seed)
 
 @rpc("any_peer", "call_local")
-func start_game(seed):
+func start_game(map_seed):
 	var game
-	if GameManager.Players.size() > 4:
+	if GameManager.Players.size() > 4 or GameManager.use_Map6:
 		game = load("res://Scenes/map_6p.tscn").instantiate()
 	else:
 		game = load("res://Scenes/map_4p.tscn").instantiate()
 	
-	game.map_seed = seed
+	game.map_seed = map_seed
 	game.connect("winner", _end_game)
 	get_tree().root.add_child(game)
 	self.hide()
 
-func _end_game(name):
-	end_the_game.rpc(name)
+func _end_game(nome):
+	end_the_game.rpc(nome)
 
 
 @rpc("any_peer", "call_local")
-func end_the_game(name):
+func end_the_game(nome):
 	
 	for i in GameManager.Players:
 		if GameManager.Players[i].score == GameManager.win_con:
-			print("Winner: ", name)
+			print("Winner: ", nome)
 		GameManager.Players[i].score = 0
 	
 	var node = get_tree().root.get_child(2)
@@ -154,18 +153,13 @@ func end_the_game(name):
 	self.show()
 
 
-func _process(_delta):
-	pass
-
-
-
 func list_players():
 	for i  in range(0, player_list.get_child_count()):
 		player_list.get_child(i).queue_free()
 	
 	for i in GameManager.Players:
 		var line = Label.new()
-		line.text = GameManager.Players[i].name
+		line.text = GameManager.Players[i].nome
 		line.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		line.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		player_list.add_child(line)

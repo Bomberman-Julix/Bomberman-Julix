@@ -8,7 +8,6 @@ extends Node2D
 
 
 @export var id = 0
-@export var char_name = "Name"
 @export var tile_map = 0
 @export var bomb_manager = 0
 @export var skin = "res://Sprites/playersheet2.png"
@@ -27,6 +26,7 @@ signal dead
 
 func _enter_tree():
 	$MultiplayerSynchronizer.set_multiplayer_authority(str(name).to_int())
+
 
 func _ready():
 	sprite.texture = load(skin)
@@ -123,7 +123,6 @@ func _process(_delta):
 	elif Input.is_action_pressed("right"):
 		sprite.flip_h = false
 		side = 1
-		animation.play("walk_right")
 		move(Vector2.RIGHT)
 	#Move para esquerda
 	elif Input.is_action_pressed("left"):
@@ -131,19 +130,17 @@ func _process(_delta):
 		side = 1
 		move(Vector2.LEFT)
 
+
 #Função que move o player
 func move(direction: Vector2):
 
 	var current_tile: Vector2i = tile_map.local_to_map(global_position)
-	var target_tile: Vector2i = Vector2i(current_tile.x + direction.x, current_tile.y + direction.y)
+	var target_tile: Vector2i = Vector2i(int(current_tile.x) + int(direction.x), int(current_tile.y) + int(direction.y))
 	var tile_data: TileData = tile_map.get_cell_tile_data(0, target_tile)
 	var tile_data_layer1: TileData = tile_map.get_cell_tile_data(1, target_tile)
 	
 	#Verifica se o tile que irá se mover é "legal"
-	if tile_data == null:
-		active = false
-		animation.play("death") 
-	elif tile_data.get_custom_data("walkable") == false:
+	if tile_data.get_custom_data("walkable") == false:
 		return
 	
 	#Força a atualização do raycast
@@ -164,16 +161,16 @@ func move(direction: Vector2):
 
 #Função de colocar a bomba
 @rpc("any_peer", "call_local", "reliable")
-func place_bomb(bomb_range, bomb_seed):
+func place_bomb(explosion_range, bomb_seed):
 	var bomb = preload("res://Scenes/bomb.tscn").instantiate()
 	var current_tile: Vector2i = tile_map.local_to_map(global_position)
 	#Posição da bomba
 	bomb.global_position = tile_map.map_to_local(current_tile)
 	bomb.tile_map = tile_map
 	#Range da bomba
-	bomb.explosion_len = bomb_range
+	bomb.explosion_len = explosion_range
 	#Seed da bomba
-	bomb.seed = bomb_seed
+	bomb.set_seed = bomb_seed
 	bomb.connect("exploded", _replace_bomb)
 	bomb_manager.add_child(bomb)
 

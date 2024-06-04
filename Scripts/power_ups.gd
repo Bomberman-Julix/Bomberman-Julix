@@ -6,15 +6,19 @@ extends Area2D
 
 
 func _ready():
-	if type == 0:
+	if type >= 0 and type <= 0.19:
+		type = 0
 		anim.play("Speed")
-	elif type == 1:
+	elif type >= 0.20 and type <= 0.54:
+		type = 1
 		anim.play("Bomb")
-	elif type == 2:
+	elif type >= 0.55 and type <= 0.89:
+		type = 2
 		anim.play("Flame")
-	elif type == 3:
+	else:
+		type = 3
 		anim.play("Skull")
 
 
-func _on_area_entered(area):
+func _on_area_entered(_area):
 	queue_free()

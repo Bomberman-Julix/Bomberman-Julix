@@ -36,7 +36,6 @@ var skins = ["res://Sprites/playersheet1.png",
 "res://Sprites/playersheet5.png",
 "res://Sprites/playersheet6.png"]
 var rng = RandomNumberGenerator.new()
-var dead_count = 0
 var tile_map_size = Vector2(23, 15)
 
 func _ready():
@@ -54,15 +53,18 @@ func _ready():
 
 
 @rpc("any_peer", "call_local")
-func restart(seed):
+func restart(curr_seed):
 	
 	tile_map_size = Vector2(23, 15)
 	
-	rng.seed = seed
+	rng.seed = curr_seed
 	build_map(tile_map_size.x, tile_map_size.y)
 	
 	for i in range(0, power_ups.get_child_count()):
 		power_ups.get_child(i).queue_free()
+	
+	for i in range(0, bomb_manager.get_child_count()):
+		bomb_manager.get_child(i).queue_free()
 	
 	var index = 0
 	for p in player_manager.get_children():
@@ -70,8 +72,8 @@ func restart(seed):
 		scores[index].text = str(GameManager.Players[p.name.to_int()].score)
 		index += 1
 	
-	
-	started = false
+	timer.start()
+	started = true
 
 
 func _on_game_start_timeout():
@@ -103,15 +105,15 @@ func build_map(width, height):
 	
 	tile_map.clear_layer(1)
 	
+	var chance
 	for x in range(1, width - 1):
 		for y in range(1, height - 1):
-			var chance = rng.randi_range(0, 99)
+			chance = rng.randf()
 			for i in spawn_points:
 				if Vector2i(x, y) == i or tile_map.get_cell_atlas_coords(0, Vector2i(x, y), 0) == Vector2i(1, 0):
 					chance = -1
-			if chance > 30:
-				tile_map.set_cell(1, Vector2i(x, y), 0, Vector2i(3, 0))
-
+			if chance > 0.25:
+				tile_map.set_cell(1, Vector2i(x, y), 0, Vector2i(0, 0))
 
 
 func _process(_delta):
@@ -123,22 +125,29 @@ func _process(_delta):
 	if timer.time_left <= 5:
 		timer_label.modulate = RedClr
 
+
 func _player_died():
 	var id
 	for p in player_manager.get_children():
 		if p.active:
 			id = str(p.name).to_int()
 	
-	GameManager.Players[id].score += 1
-	if GameManager.Players[id].score == GameManager.win_con:
-		emit_signal("winner", GameManager.Players[id].name)
-	else:
+	if id != null:
+		GameManager.Players[id].score += 1
+		if GameManager.Players[id].score == GameManager.win_con:
+			increase_score.rpc(id)
+			emit_signal("winner", GameManager.Players[id].nome)
+			return
+		
 		increase_score.rpc(id)
-		s_timer.start()
+	
+	s_timer.start()
+
 
 @rpc("any_peer")
 func increase_score(id):
 	GameManager.Players[id].score += 1
+
 
 var beggining = 0
 var tile_id = 1
